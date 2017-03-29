@@ -21,6 +21,9 @@
 <html>
   <head>
     <meta charset='utf-8' />
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   </head>
   <body>
     <!--Add a button for the user to click to initiate auth sequence -->
@@ -31,7 +34,7 @@
       // The provided key works for this sample only when run from
       // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
       // To use in your own application, replace this API key with your own.
-      var apiKey = '';
+      var apiKey = 'AIzaSyDAl7AfjG67i0uviEQ3EfLxEcpq1AuPzxc';
 
       // Use a button to handle authentication the first time.
       function handleClientLoad() {
@@ -42,13 +45,15 @@
       // Load the API and make an API call.  Display the results on the screen.
       function makeApiCall() {
         gapi.client.load('plus', 'v1', function() {
-          var request = gapi.client.plus.people.get({
-            'userId': ''
-            // For instance: 
-            // 'userId': '+GregorioRobles'
+          var request_profile = gapi.client.plus.people.get({
+            'userId': '+ChristinaCollada'
           });
-          request.execute(function(resp) {
-            var heading = document.createElement('h4');
+          var request_activities = gapi.client.plus.activities.list({
+            'userId': '+ChristinaCollada',
+            'collection': 'public'
+          });
+          request_profile.execute(function(resp) {
+            var heading = document.createElement('h3');
             var image = document.createElement('img');
             image.src = resp.image.url;
             heading.appendChild(image);
@@ -56,11 +61,39 @@
 
             document.getElementById('content').appendChild(heading);
           });
+          request_activities.execute(function(resp) {
+            var list = document.getElementById('list');
+            var activities = resp.items;
+
+            for(activity of activities) {
+              console.log(activity.title);
+              var element = document.createElement('a');
+              element.href = activity.url;
+              element.className = "list-group-item";
+
+              var title = document.createElement('h4');
+              title.className = "list-group-item-heading";
+              title.innerHTML = activity.title;
+              element.appendChild(title);
+
+              if(typeof activity.location != 'undefined') {
+                console.log(activity.location);
+                var geolocation = document.createElement('p');
+                geolocation.className = "list-group-item-text";
+                geolocation.innerHTML = "Latitude: " + activity.location.position.latitude;
+                geolocation.innerHTML += " Longitude: " + activity.location.position.longitude;
+                element.appendChild(geolocation);
+              }
+
+              list.appendChild(element);
+            }
+          });
         });
       }
     </script>
     <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
     <div id="content"></div>
     <p>Retrieves your profile name (and picture) using the Google Plus API.</p>
+    <div class="list-group" id="list"></div>
   </body>
 </html>
